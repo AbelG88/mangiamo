@@ -38,11 +38,12 @@ function lgOpen(kind){
 }
 
 /* ---------- aportes ---------- */
-function apLinksHTML(){
+function apLinksHTML(row){
   var G=[['ar','Desde Argentina'],['intl','Desde el exterior']];
   return G.map(function(g){
-    return '<div class="cat" style="margin-top:12px">'+g[1]+'</div>'+AP_LINKS.filter(function(l){return l.g===g[0];}).map(function(l){
-      return '<a class="ap-link ap-'+l.id+'" href="'+l.url+'" target="_blank" rel="noopener noreferrer">'+l.label+'</a>';}).join('');
+    var l=AP_LINKS.filter(function(x){return x.g===g[0];}).map(function(x){
+      return '<a class="ap-link ap-'+x.id+'" href="'+x.url+'" target="_blank" rel="noopener noreferrer">'+x.label+'</a>';}).join('');
+    return '<div class="cat" style="margin-top:10px">'+g[1]+'</div>'+(row?'<div class="ap-row">'+l+'</div>':l);
   }).join('');
 }
 function apPrompt(){
@@ -100,8 +101,13 @@ function apSendMail(){
 function apSendWA(){var m=apMsg();window.open('https://wa.me/'+CONTACT_WA+'?text='+encodeURIComponent(m.subject+'\n\n'+m.body),'_blank','noopener');}
 
 /* ---------- sección de Ajustes ---------- */
+/* aportes: arriba de todo en Ajustes */
+function apTopHTML(){
+  return '<div class="card ap-top"><b style="font-size:16px">💚 Apoyar Mangiamo</b><div class="mut" style="margin:4px 0 2px">Es gratis y sin publicidad. Si te ayuda, un aporte (opcional) permite seguir mejorándola.</div>'+apLinksHTML(true)+'</div>';
+}
+/* contacto y legales: al final */
 function apSecHTML(){
-  var h='<div class="cat">💚 Apoyar Mangiamo</div><div class="mut" style="margin-bottom:6px">Mangiamo es gratis y sin publicidad. Si te ayuda, un aporte (opcional) permite seguir mejorándola.</div>'+apLinksHTML();
+  var h='';
   if(apContactOn())h+='<div class="cat">✉️ Contacto</div><div class="mut" style="margin-bottom:8px">Ideas, problemas, o una app propia o con funciones a elección.</div><button class="btn" onclick="apContactUI()">Escribirme</button>';
   h+='<div class="cat">📄 Legal</div><button class="btn" onclick="lgOpen(\'terms\')">Términos y condiciones</button><button class="btn" onclick="lgOpen(\'privacy\')">Política de privacidad</button>'+
      '<div class="mut" style="margin:6px 0 4px">Mangiamo '+AP_VERSION+' · Las dietas orientativas deben ser consultadas y aprobadas por un nutricionista.</div>';
@@ -116,6 +122,7 @@ function apSecHTML(){
   '.ap-text h3{font-size:15px;margin:16px 0 4px}.ap-text p{font-size:14px;line-height:1.5;margin:0 0 8px;color:var(--tx)}'+
   '.ap-link{display:block;text-align:center;text-decoration:none;font-weight:700;border-radius:16px;padding:13px;margin:8px 0;color:#fff}'+
   '.ap-mp{background:#009ee3}.ap-caf{background:#0f766e}.ap-pp{background:#0070ba}.ap-bmc{background:#ffdd00;color:#0f172a}'+
+  '.ap-top{background:var(--tint);box-shadow:none;margin-bottom:6px}.ap-row{display:flex;gap:8px}.ap-row .ap-link{flex:1;margin:6px 0;padding:11px 6px;font-size:14px}'+
   '.ap-heart{width:72px;height:72px;border-radius:24px;background:#fb7185;display:inline-flex;align-items:center;justify-content:center;font-size:36px}';
   document.head.appendChild(s);
 })();

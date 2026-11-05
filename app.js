@@ -15,7 +15,7 @@ const S={
   checked:store.get('checked',{}),
   pantry:store.get('pantry',[]),
   excl:store.get('excl',{}),
-  tab:wsTab(),off:0,ctype:'T',q:'',hsub:'ruleta',htype:'A',hq:'',ptype:'T'
+  tab:wsTab(),off:0,ctype:'T',q:'',htype:'A',hq:'',ptype:'T'
 };
 S.sel=S.sel.filter(function(k){return PROFILES.some(function(p){return p.k===k;});});
 if(!S.sel.length&&PROFILES.length)S.sel=[PROFILES[0].k];
@@ -238,11 +238,11 @@ function copyList(){
   try{navigator.clipboard.writeText(t);if(typeof wsToast==='function')wsToast('Lista copiada');}catch(e){}
 }
 
-/* ---------- HOY: ruleta + tengo en casa ---------- */
+/* ---------- HOY (ruleta) y EN CASA ---------- */
 const wheel={items:[],rot:0,result:null,spinning:false};
 function newWheel(){
   var p=pool(S.htype);
-  wheel.items=shuffle(p,Math.random).slice(0,12);wheel.result=null;
+  wheel.items=shuffle(p,Math.random).slice(0,8);wheel.result=null;
 }
 function todayCard(){
   var ws=iso(weekStart(0)),wm=weekMeals(ws),d=(new Date().getDay()+6)%7,dt=new Date();
@@ -255,42 +255,50 @@ function todayCard(){
   return h+'<div class="mut" style="margin-top:6px">Tocá una comida para ver ingredientes · 🔄 para cambiarla</div></div>';
 }
 function viewHoy(){
-  var h=todayCard()+'<div class="sub"><button class="'+(S.hsub==='ruleta'?'on':'')+'" onclick="S.hsub=\'ruleta\';newWheel();viewHoy()">🎡 Ruleta</button><button class="'+(S.hsub==='casa'?'on':'')+'" onclick="S.hsub=\'casa\';viewHoy()">🧺 Tengo en casa</button></div>';
-  h+='<div class="tf" id="ptf"></div>';
-  if(S.hsub==='ruleta'){
-    h+='<div class="wheelwrap"><div class="ptr"></div><canvas id="wheel" width="600" height="600"></canvas></div>';
-    h+='<div style="text-align:center;margin-bottom:10px"><button class="btn pri" onclick="spin()">🎲 ¡Girar!</button><button class="btn" onclick="newWheel();viewHoy()">Mezclar opciones</button></div><div class="res" id="wres"></div>';
-  }else{
-    h+='<input type="text" id="hq" placeholder="Buscar ingrediente…" oninput="S.hq=this.value;renderChips()" value="'+S.hq.replace(/"/g,'')+'"><div id="pchips"></div><div style="margin:10px 0"><button class="btn" onclick="S.pantry=[];save();viewHoy()">Limpiar</button></div><div id="pres"></div>';
-  }
+  var h=todayCard()+'<div class="cat" style="margin-top:8px">🎡 ¿No sabés qué comer?</div>'+
+    '<div class="mut" style="margin-bottom:10px">Elegí para cuándo es y girá la ruleta: te propone una comida al azar.</div>'+
+    '<div class="tf" id="ptf"></div>'+
+    '<div class="wheelwrap"><div class="ptr"></div><canvas id="wheel" width="600" height="600" onclick="spin()" aria-label="Ruleta de comidas: tocá para girar"></canvas></div>'+
+    '<div style="text-align:center;margin-bottom:12px"><button class="btn pri" onclick="spin()">🎲 Girar la ruleta</button></div><div class="res" id="wres" style="margin-bottom:90px"></div>';
   $('#main').innerHTML=h;
-  renderTF2();
-  if(S.hsub==='ruleta'){drawWheel();showResult();}else{renderChips();renderRes();}
+  renderTF2();drawWheel();showResult();
+}
+function viewCasa(){
+  var h='<div class="bar"><b>🧺 Tengo en casa</b></div>'+
+    '<div class="mut" style="margin-bottom:10px">Marcá lo que tenés y te muestro las comidas que podés hacer ya, o casi.</div>'+
+    '<div class="tf" id="ptf"></div>'+
+    '<input type="text" id="hq" placeholder="Buscar ingrediente…" oninput="S.hq=this.value;renderChips()" value="'+S.hq.replace(/"/g,'')+'"><div id="pchips"></div>'+
+    '<div style="margin:10px 0"><button class="btn" onclick="S.pantry=[];save();viewCasa()">Limpiar lo marcado</button></div><div id="pres"></div>';
+  $('#main').innerHTML=h;
+  renderTF2();renderChips();renderRes();
 }
 function renderTF2(){
-  var opts=[['A','Almuerzo'],['C','Cena'],['M','Merienda']];
-  if(S.hsub==='casa')opts.unshift(['T','Todas']);
-  var key=S.hsub==='ruleta'?'htype':'ptype';
+  var casa=S.tab==='casa',opts=[['A','Almuerzo'],['C','Cena'],['M','Merienda']];
+  if(casa)opts.unshift(['T','Todas']);
+  var key=casa?'ptype':'htype';
   $('#ptf').innerHTML=opts.map(function(o){return '<button class="'+(S[key]===o[0]?'on':'')+'" onclick="setHType(\''+o[0]+'\')">'+o[1]+'</button>';}).join('');
 }
-function setHType(t){if(S.hsub==='ruleta'){S.htype=t;newWheel();}else{S.ptype=t;}viewHoy();}
+function setHType(t){if(S.tab==='casa'){S.ptype=t;viewCasa();}else{S.htype=t;newWheel();viewHoy();}}
+function useToday(id){
+  var m=MEALS.find(function(x){return x.id===id;});if(!m)return;
+  var ws=iso(weekStart(0)),d=(new Date().getDay()+6)%7;
+  getPlan(ws).over[d+S.htype]=id;save();render();wsToast('Listo: quedó para hoy');
+}
 function drawWheel(){
   var cv=$('#wheel');if(!cv)return;
   var ctx=cv.getContext('2d'),W=cv.width,R=W/2-6,n=wheel.items.length;
   ctx.clearRect(0,0,W,W);
-  if(!n){ctx.fillStyle='#94a3b8';ctx.font='bold 26px sans-serif';ctx.textAlign='center';ctx.fillText('Sin opciones',W/2,W/2);return;}
-  var seg=2*Math.PI/n;
+  if(!n){ctx.fillStyle='#94a3b8';ctx.font='bold 34px sans-serif';ctx.textAlign='center';ctx.fillText('Sin opciones',W/2,W/2);return;}
+  var seg=2*Math.PI/n,pal=['#0f9f8f','#f59e0b','#ef4444','#6366f1','#10b981','#ec4899','#0ea5e9','#84cc16'];
   for(var i=0;i<n;i++){
     var a=wheel.rot+i*seg;
     ctx.beginPath();ctx.moveTo(W/2,W/2);ctx.arc(W/2,W/2,R,a,a+seg);ctx.closePath();
-    ctx.fillStyle='hsl('+Math.round(i*360/n)+',65%,52%)';ctx.fill();
-    ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
-    ctx.save();ctx.translate(W/2,W/2);ctx.rotate(a+seg/2);
-    ctx.textAlign='right';ctx.fillStyle='#fff';ctx.font='bold 21px sans-serif';
-    var nm=wheel.items[i].name;if(nm.length>20)nm=nm.slice(0,19)+'…';
-    ctx.fillText(nm,R-14,7);ctx.restore();
+    ctx.fillStyle=pal[i%pal.length];ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.stroke();
   }
-  ctx.beginPath();ctx.arc(W/2,W/2,24,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();
+  ctx.beginPath();ctx.arc(W/2,W/2,78,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();
+  ctx.fillStyle='#0f766e';ctx.font='bold 38px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(wheel.spinning?'…':'GIRAR',W/2,W/2+2);ctx.textBaseline='alphabetic';
 }
 function spin(){
   if(wheel.spinning||!wheel.items.length)return;
@@ -304,15 +312,17 @@ function spin(){
       wheel.spinning=false;
       var n=wheel.items.length,seg=2*Math.PI/n,TWO=2*Math.PI;
       var ang=((-Math.PI/2-wheel.rot)%TWO+TWO)%TWO;
-      wheel.result=wheel.items[Math.floor(ang/seg)%n];showResult();
+      wheel.result=wheel.items[Math.floor(ang/seg)%n];drawWheel();showResult();var r=$('#wres');if(r&&r.scrollIntoView)r.scrollIntoView({behavior:'smooth',block:'center'});
     }
   }
   requestAnimationFrame(f);
 }
 function showResult(){
   var el=$('#wres');if(!el)return;
-  var m=wheel.result;
-  el.innerHTML=m?'<div class="card meal" onclick="showMeal('+m.id+')"><div class="mut">Hoy toca…</div><b style="font-size:18px">'+m.name+'</b>'+badges(m)+'<div class="mut" style="margin-top:6px">Tocá para ver ingredientes</div></div>':'';
+  var m=wheel.result,sl={A:'el almuerzo',C:'la cena',M:'la merienda'}[S.htype];
+  if(wheel.spinning){el.innerHTML='<div class="mut" style="padding:8px">Girando…</div>';return;}
+  el.innerHTML=m?'<div class="card" style="text-align:left"><div class="mut">🎉 Para '+sl+' te tocó:</div><b style="font-size:19px;display:block;margin:4px 0 8px">'+m.name+'</b>'+badges(m)+
+    '<div style="margin-top:12px"><button class="btn pri" onclick="useToday('+m.id+')">✅ Usar para hoy</button><button class="btn" onclick="showMeal('+m.id+')">Ver ingredientes</button><button class="btn" onclick="spin()">🎲 Girar de nuevo</button></div></div>':'';
 }
 function togglePantry(n){var i=S.pantry.indexOf(n);if(i>=0)S.pantry.splice(i,1);else S.pantry.push(n);save();renderChips();renderRes();}
 /* Grupos: lo que marcás en "Tengo en casa" cubre a todos los de su grupo */
@@ -384,7 +394,7 @@ function renderHeader(){
     return '<button class="pf'+(on?' on':'')+'" style="'+(on?'background:'+p.c+';border-color:'+p.c:'border-color:'+p.c)+'" onclick="toggleProf(\''+p.k+'\')">'+p.n+'</button>';
   }).join('');
 }
-const TABS=[['hoy','🎲','Hoy'],['semana','🗓️','Semana'],['comidas','🍽️','Comidas'],['compras','🛒','Compras']];
+const TABS=[['hoy','🎲','Hoy'],['semana','🗓️','Semana'],['comidas','🍽️','Comidas'],['casa','🧺','En casa'],['compras','🛒','Compras']];
 function renderNav(){
   $('#nav').innerHTML=TABS.map(function(t){return '<button class="'+(S.tab===t[0]?'on':'')+'" onclick="S.tab=\''+t[0]+'\';render()"><span>'+t[1]+'</span>'+t[2]+'</button>';}).join('');
 }
@@ -393,6 +403,7 @@ function render(){
   if(S.tab==='semana')viewSemana();
   else if(S.tab==='comidas')viewComidas();
   else if(S.tab==='compras')viewCompras();
+  else if(S.tab==='casa')viewCasa();
   else viewHoy();
   wsAfterRender();
   window.scrollTo(0,0);

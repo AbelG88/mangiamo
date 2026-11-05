@@ -297,6 +297,7 @@ function wsHeader(){
 }
 function openSettings(){
   var h='<div class="bar"><b>⚙️ '+wsEsc(WS.family?'Mangiamo':WS.data.name)+'</b><button onclick="closeModal()">✕</button></div>';
+  if(typeof apTopHTML==='function')h+=apTopHTML();
   if(!WS.family){
     var d=WS.data;
     h+='<div class="cat">👥 Personas</div>';
