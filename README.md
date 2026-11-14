@@ -26,3 +26,7 @@
 | `sw.js`, `manifest.webmanifest` | PWA sin conexión |
 
 Sin build: es HTML y JavaScript estático. Para probar en local: `python3 -m http.server` y abrir `http://localhost:8000`.
+
+## Licencia
+
+Código abierto bajo licencia [MIT](LICENSE): podés usarlo, copiarlo y modificarlo libremente.
