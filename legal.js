@@ -2,7 +2,7 @@
    Se muestran desde el asistente inicial y desde Ajustes. Mientras LG_DRAFT sea true
    se avisa que el texto está pendiente de revisión legal. */
 var LG_VERSION='2026-11-04';
-var LG_DRAFT=true;
+var LG_DRAFT=false;
 var LG_TITLES={terms:'Términos y condiciones',privacy:'Política de privacidad'};
 var LG={
 terms:
