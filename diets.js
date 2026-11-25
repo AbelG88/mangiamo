@@ -146,22 +146,48 @@ Pan de semillas con palta|M|-|Semillas (mix):20,Harina de almendras:20,Palta:0.5
 /* ---------- dietas ---------- */
 var DIETS=[
   {id:'omni',name:'Omnívora',emoji:'🍽️',desc:'Come de todo.'},
-  {id:'veg',name:'Vegetariana',emoji:'🥗',desc:'Sin carnes ni pescados. Con huevos y lácteos.'},
+  {id:'veg',name:'Ovolactovegetariana',emoji:'🥗',desc:'Sin carnes ni pescados. Con huevos y lácteos.'},
+  {id:'lacto',name:'Lactovegetariana',emoji:'🧀',desc:'Sin carnes, pescados ni huevos. Con lácteos.'},
+  {id:'ovo',name:'Ovovegetariana',emoji:'🥚',desc:'Sin carnes, pescados ni lácteos. Con huevos.'},
+  {id:'pesco',name:'Pescetariana',emoji:'🐟',desc:'Sin carnes ni aves. Con pescados, mariscos, huevos y lácteos.'},
   {id:'vegan',name:'Vegana',emoji:'🌱',desc:'Sin productos de origen animal. Requiere suplementar vitamina B12 con indicación profesional.'},
   {id:'sintacc',name:'Sin TACC (celíaca)',emoji:'🌾',desc:'Sin trigo, avena, cebada ni centeno. Usá siempre productos con el sello Sin TACC.'},
-  {id:'sinlacteos',name:'Sin lácteos',emoji:'🥛',desc:'Sin leche, quesos, yogur, crema ni manteca.'},
-  {id:'bajoazucar',name:'Baja en azúcar',emoji:'🍬',desc:'Sin azúcar, miel ni dulces agregados.'},
+  {id:'sinlacteos',name:'Sin lácteos / sin lactosa',emoji:'🥛',desc:'Sin leche, quesos, yogur, crema ni manteca.'},
+  {id:'sinhuevo',name:'Sin huevo',emoji:'🍳',desc:'Sin huevo ni preparaciones con huevo.'},
+  {id:'sinfrutossecos',name:'Sin frutos secos ni maní',emoji:'🥜',desc:'Sin nueces, almendras, maní ni sus pastas y harinas. Para alergias: revisá siempre las etiquetas.'},
+  {id:'bajoazucar',name:'Sin azúcar agregada',emoji:'🍬',desc:'Sin azúcar, miel ni dulces agregados.'},
+  {id:'lowcarb',name:'Baja en carbohidratos',emoji:'🥩',desc:'Sin cereales, pastas, pan, papa, batata, legumbres ni frutas dulces.'},
+  {id:'bajagrasa',name:'Baja en grasas',emoji:'🫒',desc:'Evita frutos secos, palta, quesos grasos, crema, manteca y pescados grasos.'},
+  {id:'altaproteina',name:'Alta en proteínas',emoji:'💪',desc:'Cada comida incluye una fuente clara de proteína.'},
+  {id:'hiposodica',name:'Baja en sodio',emoji:'🧂',desc:'Evita fiambres, quesos curados y aceitunas. Cocinar sin agregar sal.'},
   {id:'chicos',name:'Simple para chicos',emoji:'🧒',desc:'Platos sencillos y conocidos, para chicos selectivos.'}
 ];
 var DIET_CUSTOM={id:'propia',name:'Armar la mía',emoji:'✨',desc:'Cargás tus propias comidas con una IA: te doy el prompt.'};
 var DIET_SUGAR=[];   /* ingredientes con azúcar agregada (hoy el banco no tiene ninguno) */
+function dietHas(m,list){return m.ings.some(function(i){return list.indexOf(i.n)>=0;});}
+var DIET_TERRESTRE=['Pollo','Pavita','Carne vacuna','Carne picada','Cerdo','Jamón cocido'];
+var DIET_NUTS=['Frutos secos','Nueces','Almendras','Harina de almendras','Maní','Pasta de maní'];
+var DIET_CARBFRUIT=['Banana','Fruta de estación','Manzana','Ciruelas pasas','Choclo','Arvejas'];
+var DIET_GRASAS=['Frutos secos','Nueces','Almendras','Harina de almendras','Maní','Pasta de maní','Tahini','Palta','Crema','Manteca','Queso semiduro','Muzzarella','Queso rallado','Leche de coco','Coco rallado','Salmón','Cerdo','Carne picada','Aceitunas','Semillas (mix)','Sésamo molido'];
+var DIET_PROT=['Pollo','Pavita','Carne vacuna','Carne picada','Cerdo','Pescado blanco','Salmón','Atún','Camarones','Mejillones','Huevo','Tofu','Soja texturizada','Lentejas','Garbanzos','Porotos','Ricota','Queso fresco','Queso semiduro','Yogur natural'];
+var DIET_SODIO=['Jamón cocido','Queso rallado','Queso semiduro','Aceitunas'];
+function dietHuevos(m){var q=0;m.ings.forEach(function(i){if(i.n==='Huevo')q+=i.q;});return q;}
 var DIET_TESTS={
   omni:function(m){return !m.f.O;},
   veg:function(m){return !m.f.M&&!m.f.O;},
+  lacto:function(m){return !m.f.M&&!m.f.O&&!m.egg;},
+  ovo:function(m){return !m.f.M&&!m.f.O&&!m.dairy;},
+  pesco:function(m){return !m.f.O&&!m.f.R&&!dietHas(m,DIET_TERRESTRE);},
   vegan:function(m){return !m.f.M&&!m.f.O&&!m.dairy&&!m.egg;},
   sintacc:function(m){return !m.f.G&&!m.f.O;},
   sinlacteos:function(m){return !m.dairy&&!m.f.O;},
+  sinhuevo:function(m){return !m.egg&&!m.f.O;},
+  sinfrutossecos:function(m){return !dietHas(m,DIET_NUTS)&&!m.f.O;},
   bajoazucar:function(m){return !m.sugar&&!m.f.O;},
+  lowcarb:function(m){return !m.f.P&&!m.f.W&&!m.f.G&&!m.f.Z&&!m.f.L&&!dietHas(m,DIET_CARBFRUIT)&&!m.f.O;},
+  bajagrasa:function(m){return !dietHas(m,DIET_GRASAS)&&dietHuevos(m)<=2&&!m.f.O;},
+  altaproteina:function(m){return dietHas(m,DIET_PROT)&&!m.f.O;},
+  hiposodica:function(m){return !dietHas(m,DIET_SODIO)&&!m.f.O;},
   chicos:function(m){return m.k&&!m.f.S&&!m.f.O;}
 };
 
