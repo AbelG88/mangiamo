@@ -289,7 +289,7 @@ function drawWheel(){
   var ctx=cv.getContext('2d'),W=cv.width,R=W/2-6,n=wheel.items.length;
   ctx.clearRect(0,0,W,W);
   if(!n){ctx.fillStyle='#94a3b8';ctx.font='bold 34px sans-serif';ctx.textAlign='center';ctx.fillText('Sin opciones',W/2,W/2);return;}
-  var seg=2*Math.PI/n,pal=['#0f9f8f','#f59e0b','#ef4444','#6366f1','#10b981','#ec4899','#0ea5e9','#84cc16'];
+  var seg=2*Math.PI/n,pal=['#3b82f6','#f59e0b','#ef4444','#6366f1','#10b981','#ec4899','#0ea5e9','#84cc16'];
   for(var i=0;i<n;i++){
     var a=wheel.rot+i*seg;
     ctx.beginPath();ctx.moveTo(W/2,W/2);ctx.arc(W/2,W/2,R,a,a+seg);ctx.closePath();

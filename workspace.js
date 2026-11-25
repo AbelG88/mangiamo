@@ -4,7 +4,7 @@
    Cada cambio de personas/comidas se guarda y recarga la app para reconstruir todo limpio. */
 
 var WS_KEYS='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-var WS_COLORS=['#0d9488','#16a34a','#d97706','#0284c7','#9333ea','#db2777','#dc2626','#4f46e5','#65a30d','#0891b2'];
+var WS_COLORS=['#3b82f6','#16a34a','#d97706','#0284c7','#9333ea','#db2777','#dc2626','#4f46e5','#65a30d','#0891b2'];
 var WS_MAX_MEALS=600;
 
 /* ---------- almacenamiento ---------- */
