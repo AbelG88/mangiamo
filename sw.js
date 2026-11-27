@@ -1,4 +1,4 @@
-const C='mangiamo-v5',F=['./','index.html','store.js','app.js','data.js','diets.js','workspace.js','wizard.js','backup.js','legal.js','apoyo.js','icon-192.png'];
+const C='mangiamo-v6',F=['./','index.html','store.js','app.js','data.js','diets.js','workspace.js','wizard.js','backup.js','legal.js','apoyo.js','icon-192.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
