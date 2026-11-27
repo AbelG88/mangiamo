@@ -29,4 +29,4 @@ Sin build: es HTML y JavaScript estático. Para probar en local: `python3 -m htt
 
 ## Licencia
 
-Código abierto bajo licencia [MIT](LICENSE): podés usarlo, copiarlo y modificarlo libremente.
+Código público bajo licencia [PolyForm Noncommercial 1.0.0](LICENSE): podés usarlo, copiarlo y modificarlo gratis, sin fines comerciales.
